@@ -13,6 +13,21 @@ import io.vertx.core.json.JsonObject;
 @Path("/")
 public class InvoiceResource {
 
+/*  
+    这里应该是order service调用的点，
+    调用的参数是一个order object, 他是继承了序列化，我们猜测他通过json自动进行了转化
+    @*** 是java里面的自定义annotation, 用@interface声明出来的
+    他不会修改源代码，但是在支撑的底层框架里面，会有如下代码，检查annotation
+    Class<?> clazz = object.getClass();
+    if (!clazz.isAnnotationPresent(JsonSerializable.class)) {
+
+    Map<String, String> jsonElementsMap = new HashMap<>();
+    for (Field field : clazz.getDeclaredFields()) {
+        field.setAccessible(true);
+        if (field.isAnnotationPresent(JsonElement.class)) {
+
+    可以看到，底层框架代码，可以通过检查 annotation 来判断是否需要自动转化，或者执行更多的业务逻辑。
+*/
     @POST
     @Path("/notify/order")
     @Consumes(MediaType.APPLICATION_JSON)

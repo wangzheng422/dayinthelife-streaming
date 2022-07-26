@@ -11,7 +11,9 @@ public class OrdersRepository {
     public OrdersRepository(RestTemplateBuilder restTemplateBuilder) {
         this.restOperations = restTemplateBuilder.build();
     }
-
+/*
+ *  这里调用了inventory, invoice service，注意是同步调用，会阻塞。
+ */
     public String placeOrder(Order order) {
         String res1 = this.restOperations.postForObject("http://inventory:8080/notify/order",order, String.class);
         String res2 = this.restOperations.postForObject("http://invoice:8080/notify/order", order, String.class);

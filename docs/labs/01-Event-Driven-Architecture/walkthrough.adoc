@@ -171,6 +171,8 @@ oc project {namespace}
 ----
 oc apply -n {namespace} -f $CHE_PROJECTS_ROOT/FleurDeLune/support/projects/module-1/eda-dc.yaml
 ----
++
+如果前置的预备课程没做的话，这里做的就是把之前的cloud native的应用，直接部署出来，你就不用做前置的预备课程了。
 
 . You can check the components were successfully deployed by opening the OpenShift Developer Console link:{openshift-host}/topology/ns/{user-username}[Topology View, window="_blank"]. Don't forget to change the view from *Administrator* to *Developer*.
 +
@@ -294,6 +296,12 @@ image::images/lab1-architecture-eda.png[Architecture EDA, role="integr8ly-img-re
 === Create an Address Space
 
 Let's create an **Address Space** using the AMQ Online Operator.
+
+An address space is a group of addresses that can be accessed through a single connection (per protocol). This means that clients connected to the endpoints of an address space can send messages to or receive messages from any authorized address within that address space. An address space can support multiple protocols, as defined by the address space type.
+
+AMQ Online has two types of address spaces: Standard, Brokered
+
+https://access.redhat.com/documentation/en-us/red_hat_amq/7.6/html-single/using_amq_online_on_openshift/index
 
 . Go back to your OpenShift Developer Console link:{openshift-host}/topology/ns/{namespace}[Topology View, window="_blank"].
 
@@ -420,6 +428,8 @@ Did you remember to write down the address space *Host*?
 == Develop Fuse Services
 
 *Red Hat Fuse Online* (part of _Red Hat Fuse_) is an integration Platform-as-a-Service (iPaaS) solution that makes it easy for business users to collaborate with integration experts and application developers. It is a fully cloud-hosted toolchain and runtime, available right from your browser.
+
+upstream: https://syndesis.io/
 
 [type=taskResource]
 .Fuse Online
@@ -594,6 +604,10 @@ image::images/fuse-select-publish.png[Publish Messages, role="integr8ly-img-resp
 
 . Fill in the _topic_ name `incomingorders?exchangePattern=InOnly&disableReplyTo=true` in the *Destination name* textbox and select `Topic` from the *Destination type* combobox. Then, click the *Next* button.
 +
+URI pattern in upstream: https://camel.apache.org/components/3.18.x/activemq-component.html
++
+URI pattern in redhat docs: https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#ReturnAddress
++
 image::images/fuse-destination-name.png[Destination Name, role="integr8ly-img-responsive"]
 
 . In this screen, select `JSON Instance` from the *Select Type* menu. Type `order` in the *Data Type Name* field and paste the following code in the *Definition* field:
@@ -649,6 +663,8 @@ image::images/fuse-save-publish.png[Save and Publish API, role="integr8ly-img-re
 . It will take a moment for Fuse to deploy your integration. It will compile and package an Apache Camel route into a _container_ image that is deployed to OpenShift. Fuse completes these steps automatically, so you don't need to learn how to build and deploy a container on Kubernetes. Wait a few minutes for the process to complete.
 +
 image::images/fuse-building-integration.png[Building Integration, role="integr8ly-img-responsive"]
+
+在这里，他会创建一个build config，并且激活一个build，最后做成一个pod服务，进行运行。
 
 === Deploy inventory and invoice event-driven services
 
