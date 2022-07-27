@@ -172,7 +172,7 @@ oc project {namespace}
 oc apply -n {namespace} -f $CHE_PROJECTS_ROOT/FleurDeLune/support/projects/module-1/eda-dc.yaml
 ----
 +
-如果前置的预备课程没做的话，这里做的就是把之前的cloud native的应用，直接部署出来，你就不用做前置的预备课程了。
+👉如果前置的预备课程没做的话，这里做的就是把之前的cloud native的应用，直接部署出来，你就不用做前置的预备课程了。
 
 . You can check the components were successfully deployed by opening the OpenShift Developer Console link:{openshift-host}/topology/ns/{user-username}[Topology View, window="_blank"]. Don't forget to change the view from *Administrator* to *Developer*.
 +
@@ -297,11 +297,11 @@ image::images/lab1-architecture-eda.png[Architecture EDA, role="integr8ly-img-re
 
 Let's create an **Address Space** using the AMQ Online Operator.
 
-An address space is a group of addresses that can be accessed through a single connection (per protocol). This means that clients connected to the endpoints of an address space can send messages to or receive messages from any authorized address within that address space. An address space can support multiple protocols, as defined by the address space type.
+👉An address space is a group of addresses that can be accessed through a single connection (per protocol). This means that clients connected to the endpoints of an address space can send messages to or receive messages from any authorized address within that address space. An address space can support multiple protocols, as defined by the address space type.
 
-AMQ Online has two types of address spaces: Standard, Brokered
+👉AMQ Online has two types of address spaces: Standard, Brokered
 
-https://access.redhat.com/documentation/en-us/red_hat_amq/7.6/html-single/using_amq_online_on_openshift/index
+👉https://access.redhat.com/documentation/en-us/red_hat_amq/7.6/html-single/using_amq_online_on_openshift/index
 
 . Go back to your OpenShift Developer Console link:{openshift-host}/topology/ns/{namespace}[Topology View, window="_blank"].
 
@@ -429,7 +429,7 @@ Did you remember to write down the address space *Host*?
 
 *Red Hat Fuse Online* (part of _Red Hat Fuse_) is an integration Platform-as-a-Service (iPaaS) solution that makes it easy for business users to collaborate with integration experts and application developers. It is a fully cloud-hosted toolchain and runtime, available right from your browser.
 
-upstream: https://syndesis.io/
+👉upstream: https://syndesis.io/
 
 [type=taskResource]
 .Fuse Online
@@ -466,6 +466,10 @@ image::images/fuse-amqp-broker.png[AMQP Message Broker Connector, role="integr8l
 ----
 amqp://{your-service.host}?requestTimeout=1000
 ----
+
+👉URI pattern in upstream: https://camel.apache.org/components/3.18.x/activemq-component.html
+
+👉URI pattern in redhat docs: https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#ReturnAddress
 
 image::images/fuse-connection-uri.png[AMQP Connection URI, role="integr8ly-img-responsive"]
 --
@@ -604,9 +608,9 @@ image::images/fuse-select-publish.png[Publish Messages, role="integr8ly-img-resp
 
 . Fill in the _topic_ name `incomingorders?exchangePattern=InOnly&disableReplyTo=true` in the *Destination name* textbox and select `Topic` from the *Destination type* combobox. Then, click the *Next* button.
 +
-URI pattern in upstream: https://camel.apache.org/components/3.18.x/activemq-component.html
+👉URI pattern in upstream: https://camel.apache.org/components/3.18.x/activemq-component.html
 +
-URI pattern in redhat docs: https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#ReturnAddress
+👉URI pattern in redhat docs: https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#ReturnAddress
 +
 image::images/fuse-destination-name.png[Destination Name, role="integr8ly-img-responsive"]
 
@@ -664,9 +668,13 @@ image::images/fuse-save-publish.png[Save and Publish API, role="integr8ly-img-re
 +
 image::images/fuse-building-integration.png[Building Integration, role="integr8ly-img-responsive"]
 
-在这里，他会创建一个build config，并且激活一个build，最后做成一个pod服务，进行运行。
+👉在这里，他会创建一个build config，并且激活一个build，最后做成一个pod服务，进行运行。
+
+👉整个fuse online这个东西，配置了一个rest service，这个service接受一个order的json，然后把他塞到amq里面去，然后返回一个固定值。我们可以看到，这里面零编程，就实现了一个业务逻辑。这个也是fues online这种低代码平台的优势所在。
 
 === Deploy inventory and invoice event-driven services
+
+👉这里面的页面逻辑并不复杂，页面上有REST，这个下面的商品，点击以后，走/order/rest，页面上还有ASYNC，这个下面的商品，点击以后走/order/event。
 
 . Go back to the CodeReady Workspaces IDE terminal and update the *application.properties* file under `support/projects/module-1/` so we can create a _config map_ that will provide the AMQ address space for our event-driven services. Update the `quarkus.qpid-jms.url` property with the *hostname* that you wrote down in the previous task.
 +
