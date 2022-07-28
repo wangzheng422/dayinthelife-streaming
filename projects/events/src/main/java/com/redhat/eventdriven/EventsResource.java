@@ -22,7 +22,19 @@ public class EventsResource {
     Logger log = LoggerFactory.getLogger(EventsResource.class);
 
     /* TODO add notifications Channel */
+    @Inject
+    @Channel("notifications")
+    Flowable<String> notifications;
 
     /* TODO add consume Path */
-
+    @GET
+    @Path("/consume")
+    @NoCache
+    @Produces(MediaType.SERVER_SENT_EVENTS)
+    public Publisher<String> sendEvents() {
+        // Stream notifications as Server-Side Events
+        return Flowable.<String>merge(
+            notifications.map(event -> { log.info("ev= " + event); return event; }),
+            Flowable.interval(1, TimeUnit.SECONDS).map(x -> "{}"));
+    }
 }

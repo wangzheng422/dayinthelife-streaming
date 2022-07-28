@@ -706,6 +706,23 @@ oc -n {namespace} set env deployment/www-store ORDERS_EVENT_BASE_URL="http://i-e
 oc -n {namespace} apply -f $CHE_PROJECTS_ROOT/FleurDeLune/support/projects/module-1/eda-services.yaml
 ----
 
+[TIP]
+====
+这个yaml脚本里面，定义了integration, 有camel的源代码，而且使用了camel的语法，语法介绍参考这里： https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#FMRS-BJDS
+
+简单来说，比如inventory这个，他就是先从amq上收到一个信息，然后log一下。日志范例如下：
+
+2022-07-28 09:17:39,207 INFO  [route1] (Camel (camel-1) thread #0 - JmsConsumer[incomingorders]) Inventory Notified {"address":"hello","itemId":"135790","orderId":"978","orderItemName":"Mango","price":2,"quantity":1,"username":null,"zipCode":"15555"}
+
+然后反序列化和序列化一下，中间设置了一下 message 的 header 。接下来，等待一小段时间。然后调用自定义的一个数据结构映射器 processInventory ，把数据 mapping 一下。最后，把这个新的数据结构发送到 amq 上的 notification topic。最后，再日志一下，日志范例如下：
+
+2022-07-28 09:17:44,346 INFO  [org.apa.qpi.jms.JmsConnection] (AmqpProvider :(2):[amqp://messaging-88d9c44.workshop-operators.svc:-1]) Connection ID:e987012b-43d1-46e5-9443-7140f7d348f5:2 connected to server: amqp://messaging-88d9c44.workshop-operators.svc
+
+2022-07-28 09:17:44,382 INFO  [info] (Camel (camel-1) thread #1 - Delay) Exchange[ExchangePattern: InOut, BodyType: String, Body: {"orderId":"978","itemId":"135790","department":"inventory","datetime":1658999864292,"quantity":1,"flavor":"Mango","inventoryId":490933}]
+
+另外，我们注意到，在这个 yaml 文件里面，integration 的定义，引用了之前的configmap 里面的参数定义。
+====
+
 . The rest of the event-driven components should deploy now.  You can take a look at the topology view to check the deployment progress. Give it a few moments for everything to deploy.
 
 [type=verification]
@@ -715,6 +732,10 @@ In your topology view do you see 2 new services deployed: `invoice-events` and `
 {standard-fail-text}
 
 === Test the integration
+
+👉注意，这里测试的是之前在fuse online上图形化配置的那个integration. 至于为什么url里面有i-event，是因为，我们配置了intergation的名字是event， fuse online发布的时候，自动加上了i-, 参考这个文档： https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/integrating_applications_with_fuse_online/index#how-to-specify-request_webhook
+
+👉实际上，当我们在fuse-online里面，配置完成一个integration，并且发布以后，系统里面会有一个buile config创建出来，并且会有一个build运行，最后会有一个pod运行出来，对应我们定义好了的integration.
 
 . In the same CodeReady Workspaces terminal issue the following command:
 +
@@ -754,6 +775,8 @@ Were you able to successfully start all 3 integration services?
 == Develop the Events Service
 
 For the new event-driven store application, we will need to receive the updates on the notifications in near-realtime. For this, we will need to connect to a link:https://en.wikipedia.org/wiki/Server-sent_events[Server-Sent Events] service.
+
+👉Server-Sent Events 是一种让服务端能够主动推送数据给客户端的方式，一般来说，他要求客户端浏览器的版本必须支持。主要就是检查浏览器是不是支持websocket.
 
 === Review the code
 
@@ -799,6 +822,17 @@ This will be the base we will use to build our service.
 ====
 Notice that the return type of the method is a *Publisher* and the _MediaType_ is *SERVER_SENT_EVENTS*. This will enable a persistent connection from the browser.
 ====
+
+[TIP]
+====
+这段代码是真的难懂，我们要先从client的nodejs看起。我们看 projects/store-ui/views/partials/events.handlebars 这个文件，能看到里面引用了EventSource，这个对象，是websocket API里面的，也就是浏览器要支持的，参考这里： https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource
+
+我们在 events.handlebars 这个客户端script里面，能看到他访问的url就是 /customer
+
+那么我们接下来看服务端的实现，这个我也不一定理解的对，他就是把客户端发来的消息打印出来，并且每1秒，发送一个控的信息，给客户端浏览器。
+====
+
+
 --
 
 . Most of the configuration is located in a properties file where we can add the MicroProfile connection settings for the message broker. Open `application.properties` file in 'src/main/resources/' and add the following configuration:
