@@ -223,9 +223,14 @@ spec:
 
 [TIP]
 ====
-👉 kafka connect / connector 是基于社区DBZ，我们需要先看一下架构图。需要注意的是，kafka connect / connector 版本变化比较快，本次实验用的2020-Q2版本, 但是现在实际上已经到了2021-Q3版本了。
+👉 kafka connect / connector 是基于社区DBZ，我们需要先看一下架构图。需要注意的是，kafka connect / connector 版本变化比较快，本次实验用的2020-Q2版本, 但是现在实际上已经到了2022-Q3版本了。
 
+image::images/2022-07-29T07-07-A08-531Z.png[] 
 
+从上面这个图，我们就可以看出来，这里面部署的 kafka connect 是左边的组件，负责从源数据库里面抽取数据，转化为 kafka 消息，然后落到 kafka 里面去。
+
+kafka connect 启动以后，会在 user1 project 下面运行一个新的 pod 
+debezium-connect-*
 ====
 
 . Click on *Create* button.
@@ -288,6 +293,19 @@ spec:
     database.history.kafka.topic: "{user-username}.earth.dbhistory"
 ----
 
+[TIP]
+====
+👉 这里就真正 kafka connector， 他会从目标数据库拿到数据增量，并且转化为 kafka 的消息发送出去。实际上， kafka connector 是 kafka connect 的一个配置。
+
+部署完 kafka connector，我们发现并没有新的 pod 创建，而是之前的 pod debezium-connect-* 得到了新的配置，创建了 sqlserver 抓取的thread
+
+2022-07-29 09:04:03,919 INFO [orders-connector|task-0] Creating thread debezium-sqlserverconnector-user1.earth-change-event-source-coordinator (io.debezium.util.Threads) [task-thread-orders-connector-0]
+
+这里面就会有一个问题，如果我们这个实验，是多人的集群环境，会部署多个 kafka connect，每个学员一个，那么这些 kafka connect 之间会不会冲突，也就是数据库的增量，是被所有的 kafka connect 给抓取了吗？
+
+这个问题，可以慢慢探索，目前作者所知道的是，这个是 kafka connect 框架提供的功能，他给 kafka connect 提供了一套 offset 维护机制，让 connector 知道自己同步到哪里了。
+====
+
 . Click the *Create* button to submit the configuration.
 +
 image::images/kafka-connector-details.png[Details KafkaConnector, role="integr8ly-img-responsive"]
@@ -324,6 +342,13 @@ Make sure that /#{user-username} is added at the end of the URL. You won't be ab
 ====
 +
 image:images/www-main.png[PHP System]
+
+[TIP]
+====
+👉 不得不说，这个web应用挺吓人的，他是ERP领域的应用，在浏览器里面模拟了终端字符界面的操作。
+
+这个应用会把数据写入到后台的数据库中，后面我们就会展示，kafka connector 如何把这个更新的数据，抓取和传递出来。
+====
 
 . Click on the *Choose File* button to load the _orders_ file.
 +
@@ -457,6 +482,11 @@ The AMQ Streams component uses powerful operators that simplify the deployment, 
 
 In this section you will learn how to start a local Kafka cluster that will represent the startup _Moon_ deployment.
 
+[TIP]
+====
+👉 接下来，我们要做的事情，是部署一个新的 kafka 集群 moon， 然后把数据同步到新的集群里面去。这里面模拟的就是两个不同的地域，他们之间同步kafka的数据，做到异地的灾备，或者跨异地的业务流。
+====
+
 . Go back to the OpenShift Developer console.
 
 . Change back to the `{user-username}` project and click on *+Add* menu on the left side bar.
@@ -515,6 +545,15 @@ spec:
       type: ephemeral
 ----
 
+[TIP]
+====
+👉 我们部署一个 kafka ，注意，这里面的存储是临时性的，如果重启，kafka信息都会丢失。
+
+然后就引出了一个问题，信息进入了kafka，你就能认为信息就不会丢失，肯定能到达目的地了呢？
+
+这个问题，每个人的看法不同。作者认为，虽然kafka能够配置信息永远不过期，但是从系统整体架构看，kafka更多的还是信息流和流式计算，并不能当作数据库一样的组件，依赖他来存储信息。一般还是应该在相关的业务逻辑中，提供原始业务数据的存储，并且要具备信息丢失，信息重复的鉴别和数据恢复，补录的能力。
+====
+
 . Click on *Create* button.
 +
 image::images/openshift-kafka-resource.png[OpenShift Kafka Resource, role="integr8ly-img-responsive"]
@@ -552,6 +591,15 @@ image::images/add-from-catalog.png[OpenShift From Catalog, role="integr8ly-img-r
 . Type in `mirror` in the search text field and then click on *Kafka MirrorMaker*.
 +
 image::images/openshift-mirrormaker-catalog.png[OpenShift Mirror Maker, role="integr8ly-img-responsive"]
+
+[TIP]
+====
+👉 这里面很奇怪，mirror maker 和 mirror maker 2 是什么关系，有什么联系？ 官方文档在这里： https://access.redhat.com/documentation/en-us/red_hat_amq_streams/2.1/html-single/amq_streams_on_openshift_overview/index#configuration-points-topic_str
+
+image::images/2022-07-29T15-39-A29-792Z.png[] 
+
+简单说，mirror maker 2 是升级版本，平常用他就好了。 mirror maker 也可以用，也是支持的，我们这个教程用的是 mirror maker。
+====
 
 . Click on *Create* button.
 +
