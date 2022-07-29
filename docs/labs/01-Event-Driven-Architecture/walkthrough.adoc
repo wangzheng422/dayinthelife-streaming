@@ -429,7 +429,10 @@ Did you remember to write down the address space *Host*?
 
 *Red Hat Fuse Online* (part of _Red Hat Fuse_) is an integration Platform-as-a-Service (iPaaS) solution that makes it easy for business users to collaborate with integration experts and application developers. It is a fully cloud-hosted toolchain and runtime, available right from your browser.
 
-👉upstream: https://syndesis.io/
+[TIP]
+====
+👉 fuse online's upstream: https://syndesis.io/
+====
 
 [type=taskResource]
 .Fuse Online
@@ -467,9 +470,12 @@ image::images/fuse-amqp-broker.png[AMQP Message Broker Connector, role="integr8l
 amqp://{your-service.host}?requestTimeout=1000
 ----
 
+[TIP]
+====
 👉URI pattern in upstream: https://camel.apache.org/components/3.18.x/activemq-component.html
 
 👉URI pattern in redhat docs: https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#ReturnAddress
+====
 
 image::images/fuse-connection-uri.png[AMQP Connection URI, role="integr8ly-img-responsive"]
 --
@@ -607,11 +613,14 @@ image::images/fuse-connect-amq.png[Add AMQ Online, role="integr8ly-img-responsiv
 image::images/fuse-select-publish.png[Publish Messages, role="integr8ly-img-responsive"]
 
 . Fill in the _topic_ name `incomingorders?exchangePattern=InOnly&disableReplyTo=true` in the *Destination name* textbox and select `Topic` from the *Destination type* combobox. Then, click the *Next* button.
-+
+
+[TIP]
+====
 👉URI pattern in upstream: https://camel.apache.org/components/3.18.x/activemq-component.html
-+
+
 👉URI pattern in redhat docs: https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#ReturnAddress
-+
+====
+
 image::images/fuse-destination-name.png[Destination Name, role="integr8ly-img-responsive"]
 
 . In this screen, select `JSON Instance` from the *Select Type* menu. Type `order` in the *Data Type Name* field and paste the following code in the *Definition* field:
@@ -668,13 +677,19 @@ image::images/fuse-save-publish.png[Save and Publish API, role="integr8ly-img-re
 +
 image::images/fuse-building-integration.png[Building Integration, role="integr8ly-img-responsive"]
 
+[TIP]
+====
 👉在这里，他会创建一个build config，并且激活一个build，最后做成一个pod服务，进行运行。
 
 👉整个fuse online这个东西，配置了一个rest service，这个service接受一个order的json，然后把他塞到amq里面去，然后返回一个固定值。我们可以看到，这里面零编程，就实现了一个业务逻辑。这个也是fues online这种低代码平台的优势所在。
+====
 
 === Deploy inventory and invoice event-driven services
 
+[TIP]
+====
 👉这里面的页面逻辑并不复杂，页面上有REST，这个下面的商品，点击以后，走/order/rest，页面上还有ASYNC，这个下面的商品，点击以后走/order/event。
+====
 
 . Go back to the CodeReady Workspaces IDE terminal and update the *application.properties* file under `support/projects/module-1/` so we can create a _config map_ that will provide the AMQ address space for our event-driven services. Update the `quarkus.qpid-jms.url` property with the *hostname* that you wrote down in the previous task.
 +
@@ -708,7 +723,7 @@ oc -n {namespace} apply -f $CHE_PROJECTS_ROOT/FleurDeLune/support/projects/modul
 
 [TIP]
 ====
-这个yaml脚本里面，定义了integration, 有camel的源代码，而且使用了camel的语法，语法介绍参考这里： https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#FMRS-BJDS
+👉 这个yaml脚本里面，定义了integration, 有camel的源代码，而且使用了camel的语法，语法介绍参考这里： https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#FMRS-BJDS
 
 简单来说，比如inventory这个，他就是先从amq上收到一个信息，然后log一下。日志范例如下：
 
@@ -733,9 +748,12 @@ In your topology view do you see 2 new services deployed: `invoice-events` and `
 
 === Test the integration
 
+[TIP]
+====
 👉注意，这里测试的是之前在fuse online上图形化配置的那个integration. 至于为什么url里面有i-event，是因为，我们配置了intergation的名字是event， fuse online发布的时候，自动加上了i-, 参考这个文档： https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/integrating_applications_with_fuse_online/index#how-to-specify-request_webhook
 
 👉实际上，当我们在fuse-online里面，配置完成一个integration，并且发布以后，系统里面会有一个buile config创建出来，并且会有一个build运行，最后会有一个pod运行出来，对应我们定义好了的integration.
+====
 
 . In the same CodeReady Workspaces terminal issue the following command:
 +
@@ -776,7 +794,10 @@ Were you able to successfully start all 3 integration services?
 
 For the new event-driven store application, we will need to receive the updates on the notifications in near-realtime. For this, we will need to connect to a link:https://en.wikipedia.org/wiki/Server-sent_events[Server-Sent Events] service.
 
+[TIP]
+====
 👉Server-Sent Events 是一种让服务端能够主动推送数据给客户端的方式，一般来说，他要求客户端浏览器的版本必须支持。主要就是检查浏览器是不是支持websocket.
+====
 
 === Review the code
 
@@ -825,11 +846,11 @@ Notice that the return type of the method is a *Publisher* and the _MediaType_ i
 
 [TIP]
 ====
-这段代码是真的难懂，我们要先从client的nodejs看起。我们看 projects/store-ui/views/partials/events.handlebars 这个文件，能看到里面引用了EventSource，这个对象，是websocket API里面的，也就是浏览器要支持的，参考这里： https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource
+👉 这段代码是真的难懂，我们要先从client的nodejs看起。我们看 projects/store-ui/views/partials/events.handlebars 这个文件，能看到里面引用了EventSource，这个对象，是websocket API里面的，也就是浏览器要支持的，参考这里： https://developer.mozilla.org/zh-CN/docs/Web/API/EventSource
 
 我们在 events.handlebars 这个客户端script里面，能看到他访问的url就是 /customer
 
-那么我们接下来看服务端的实现，这个我也不一定理解的对，他就是把客户端发来的消息打印出来，并且每1秒，发送一个控的信息，给客户端浏览器。
+那么我们接下来看服务端的实现，他就是把客户端发来的消息打印出来，并且每1秒，发送一个空的信息，给客户端浏览器。发空的信息给浏览器，可能是为了让websocket保持活跃，防止做练习的时候，websocket断了，出现更多奇怪的问题，模糊了本次课程的教学方向。
 ====
 
 
@@ -846,6 +867,13 @@ quarkus.http.cors=true
 mp.messaging.incoming.notifications.connector=smallrye-amqp
 mp.messaging.incoming.notifications.durable=false
 ----
+
+[TIP]
+====
+👉 这个配置文件，为什么可以这么配置，可以看smallrye的文档： https://smallrye.io/smallrye-reactive-messaging/smallrye-reactive-messaging/3.4/amqp/amqp.html#amqp-inbound
+
+====
+
 +
 The first line is just enabling link:https://en.wikipedia.org/wiki/Cross-origin_resource_sharing[Cross-Origin Resource Sharing] (CORS) for this service. Following is the MicroProfile configuration to use the `smallrye-amqp` component.
 
@@ -889,9 +917,42 @@ oc new-app -n {namespace} events -l 'app.openshift.io/runtime=quarkus,app.kubern
 [source,bash,subs="attributes+"]
 ----
 oc patch -n {namespace} dc/events -p '{ "metadata" : { "annotations" : { "app.openshift.io/connects-to" : "invoice-events,inventory-events" } }, "spec": { "template": { "spec": { "containers": [ { "name": "events", "env": [ { "name": "AMQP_HOST", "valueFrom": { "configMapKeyRef": { "name": "amq-config", "key": "service.host" } } }, { "name": "AMQP_PORT", "valueFrom": { "configMapKeyRef": { "name": "amq-config", "key": "service.port.amqp" } } } ] } ] } } } }'
+
 ----
 
+[TIP]
+====
+👉 上面的命令，就是把一个 config map 注入到 deployment config 中，这样，我们就可以在 deployment config 中，使用 `AMQP_HOST` 和 `AMQP_PORT` 的环境变量，来访问我们的消息队列。而这个 config map 的内容，我们查看了一下：
+
+lab-user@bastion:~$ oc get cm/amq-config -o json | jq .data
+{
+  "ca.crt": "......",
+  "external.host": "messaging-88d9c44-workshop-operators.apps.cluster-v68vb.v68vb.sandbox904.opentlc.com",
+  "external.port.amqps": "443",
+  "service.host": "messaging-88d9c44.workshop-operators.svc",
+  "service.port.amqp": "5672",
+  "service.port.amqp-wss": "443",
+  "service.port.amqps": "5671"
+}
+
+至于为什么可以用环境变量来设置，可以看smallrye的文档： https://smallrye.io/smallrye-reactive-messaging/smallrye-reactive-messaging/3.4/amqp/amqp.html#amqp-inbound
+
+====
+
 === Check the OpenShift Developer Console
+[TIP]
+====
+👉 我们最后来梳理一下本次实验的思路。
+
+我们只有一个客户端浏览器项目，是一个nodejs的前端，在这个前端里面，其实有2个入口，走了2个不通的处理流程，一个是sync，一个是async。
+
+sync很好理解，就是同步调用的流程，这里就不多说了。
+
+async的流程比较复杂，首先，用户在页面点击订购，他会调用 nodejs 里面的 /order/event ， 而 nodejs 里面的 /order/event 会调用我们用 fuse-online 定义的那个 integration （ 注意和 camel-k 的那个还不一样 ）， fuse-online 定义的这个 integration 是一个 rest 接口，里面做的事情，就是把 order 写道 amq 里面的 incomingorder topic 里面去， 然后直接返回，我们就能从前端页面看到订单提交了。 然后在服务端，我们用 camel-k 做了2个 integration ， 都是读取 incomingorder topic， 也都是写到 notification topic， 不同的是，他们对消息做了不同的变化。 然后就是我们的 event service 上场了， 他监听 notification topic， 如果有新的，就本地打印event， 然后把这个 event 通过 websocket 发送给前端。前端再根据消息，做不同的弹窗处理。
+
+从这里，我们可以看到，整体编程工作量，大部分都落在前端了，服务端的业务逻辑，由于有 fuse/camle-k 的助力，大大简化了，只要关心真正的数据转换就好，这个也是未来的一种趋势，服务端低代码，前端游戏化。
+
+====
 
 . Open the OpenShift Developer Console link:{openshift-host}/topology/ns/{namespace}[Topology View, window="_blank"], and make sure it's done deploying by waiting for the dark blue circles around the Quarkus logo:
 +
