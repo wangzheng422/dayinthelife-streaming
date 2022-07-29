@@ -221,6 +221,13 @@ spec:
     status.storage.topic: {user-username}-debezium-cluster-status
 ----
 
+[TIP]
+====
+👉 kafka connect / connector 是基于社区DBZ，我们需要先看一下架构图。需要注意的是，kafka connect / connector 版本变化比较快，本次实验用的2020-Q2版本, 但是现在实际上已经到了2021-Q3版本了。
+
+
+====
+
 . Click on *Create* button.
 +
 image::images/openshift-kafkaconnect-detail.png[OpenShift Kafka Resource, role="integr8ly-img-responsive"]
