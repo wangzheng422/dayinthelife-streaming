@@ -22,6 +22,20 @@ Enterprise Integration Patterns (EIPs) have been used in technology for 40+ year
 
 Patterns like the Splitter, Content-Based Routing (CBR) and WireTap are still very useful when it comes to managing and integrating our data in the cloud.  Using Camel K, we are able to enhance existing streaming technologies like Kafka to help route and mediate our data through various channels.
 
+[TIP]
+====
+👉 Splitter: https://www.enterpriseintegrationpatterns.com/patterns/messaging/Sequencer.html
+
+image::images/2022-07-31T15-20-3A11-831Z.png[] 
+
+👉 Content-Based Routing: 
+
+👉 WireTap: 
+
+====
+
+
+
 AMQ self-service messaging enables Developers to provision messaging when and where they need it via a web-based browser. The AMQ Online component is built on the foundation of Red Hat OpenShift, a container platform for high scalability and availability of cloud-native applications.
 
 To provide a better customer experience, you will be closely monitoring the harvest from marshmallows farms on the moon. You will also be adding a harvest batch shipping schedule to allow Fleur de lune to be more proactive along with faster response to any emergency that may impact their business.
