@@ -26,15 +26,16 @@ Patterns like the Splitter, Content-Based Routing (CBR) and WireTap are still ve
 ====
 👉 Splitter: https://www.enterpriseintegrationpatterns.com/patterns/messaging/Sequencer.html
 
-image::images/2022-07-31T15-20-3A11-831Z.png[] 
+image::images/2022-07-31T15-25-3A02-124Z.png[] 
 
-👉 Content-Based Routing: 
+👉 Content-Based Routing: https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentBasedRouter.html
 
-👉 WireTap: 
+image::images/2022-07-31T15-27-3A34-773Z.png[] 
 
+👉 WireTap: https://www.enterpriseintegrationpatterns.com/patterns/messaging/WireTap.html
+
+image::images/2022-07-31T15-29-3A25-664Z.png[] 
 ====
-
-
 
 AMQ self-service messaging enables Developers to provision messaging when and where they need it via a web-based browser. The AMQ Online component is built on the foundation of Red Hat OpenShift, a container platform for high scalability and availability of cloud-native applications.
 
