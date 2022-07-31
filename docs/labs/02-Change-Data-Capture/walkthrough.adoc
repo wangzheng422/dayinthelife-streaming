@@ -594,7 +594,7 @@ image::images/openshift-mirrormaker-catalog.png[OpenShift Mirror Maker, role="in
 
 [TIP]
 ====
-👉 这里面很奇怪，mirror maker 和 mirror maker 2 是什么关系，有什么联系？ 官方文档在这里： https://access.redhat.com/documentation/en-us/red_hat_amq_streams/2.1/html-single/amq_streams_on_openshift_overview/index#configuration-points-topic_str
+👉 这里面提到的 mirror maker 和 mirror maker 2 是什么关系，有什么联系？ 官方文档在这里： https://access.redhat.com/documentation/en-us/red_hat_amq_streams/2.1/html-single/amq_streams_on_openshift_overview/index#configuration-points-topic_str
 
 image::images/2022-07-29T15-39-A29-792Z.png[] 
 
@@ -624,6 +624,11 @@ spec:
     bootstrapServers: 'moon-kafka-bootstrap.{user-username}.svc:9092'
   whitelist: {user-username}.earth.*
 ----
+
+[TIP]
+====
+👉 按照文档的说法，mirror maker 用的同步技术比较“原生”，是用的 kafka 本身的 consumer / producer 技术。
+====
 
 . Click on *Create* button.
 +
@@ -704,6 +709,15 @@ spec:
     port: 8080
   replicas: 1
 ----
+
+[TIP]
+====
+👉 kafka bridge 相关的官方文档，这里是整体介绍： https://access.redhat.com/documentation/en-us/red_hat_amq/2021.q3/html-single/amq_streams_on_openshift_overview/index#overview-components-kafka-bridge_str
+
+image::images/2022-07-31T14-12-3A38-377Z.png[] 
+
+关于 kafka bridge 的官方配置文档，在这里： https://access.redhat.com/documentation/en-us/red_hat_amq/2021.q3/html-single/amq_streams_on_openshift_overview/index#configuration-points-bridge_str
+====
 
 . Click on *Create* button.
 +
