@@ -172,7 +172,10 @@ oc project {namespace}
 oc apply -n {namespace} -f $CHE_PROJECTS_ROOT/FleurDeLune/support/projects/module-1/eda-dc.yaml
 ----
 +
+[TIP]
+====
 👉如果前置的预备课程没做的话，这里做的就是把之前的cloud native的应用，直接部署出来，你就不用做前置的预备课程了。
+====
 
 . You can check the components were successfully deployed by opening the OpenShift Developer Console link:{openshift-host}/topology/ns/{user-username}[Topology View, window="_blank"]. Don't forget to change the view from *Administrator* to *Developer*.
 +
@@ -297,11 +300,14 @@ image::images/lab1-architecture-eda.png[Architecture EDA, role="integr8ly-img-re
 
 Let's create an **Address Space** using the AMQ Online Operator.
 
+[TIP]
+====
 👉An address space is a group of addresses that can be accessed through a single connection (per protocol). This means that clients connected to the endpoints of an address space can send messages to or receive messages from any authorized address within that address space. An address space can support multiple protocols, as defined by the address space type.
 
 👉AMQ Online has two types of address spaces: Standard, Brokered
 
-👉https://access.redhat.com/documentation/en-us/red_hat_amq/7.6/html-single/using_amq_online_on_openshift/index
+👉 https://access.redhat.com/documentation/en-us/red_hat_amq/7.6/html-single/using_amq_online_on_openshift/index
+====
 
 . Go back to your OpenShift Developer Console link:{openshift-host}/topology/ns/{namespace}[Topology View, window="_blank"].
 
@@ -613,14 +619,14 @@ image::images/fuse-connect-amq.png[Add AMQ Online, role="integr8ly-img-responsiv
 image::images/fuse-select-publish.png[Publish Messages, role="integr8ly-img-responsive"]
 
 . Fill in the _topic_ name `incomingorders?exchangePattern=InOnly&disableReplyTo=true` in the *Destination name* textbox and select `Topic` from the *Destination type* combobox. Then, click the *Next* button.
-
++
 [TIP]
 ====
 👉URI pattern in upstream: https://camel.apache.org/components/3.18.x/activemq-component.html
 
 👉URI pattern in redhat docs: https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#ReturnAddress
 ====
-
++
 image::images/fuse-destination-name.png[Destination Name, role="integr8ly-img-responsive"]
 
 . In this screen, select `JSON Instance` from the *Select Type* menu. Type `order` in the *Data Type Name* field and paste the following code in the *Definition* field:
@@ -676,7 +682,7 @@ image::images/fuse-save-publish.png[Save and Publish API, role="integr8ly-img-re
 . It will take a moment for Fuse to deploy your integration. It will compile and package an Apache Camel route into a _container_ image that is deployed to OpenShift. Fuse completes these steps automatically, so you don't need to learn how to build and deploy a container on Kubernetes. Wait a few minutes for the process to complete.
 +
 image::images/fuse-building-integration.png[Building Integration, role="integr8ly-img-responsive"]
-
++
 [TIP]
 ====
 👉在这里，他会创建一个build config，并且激活一个build，最后做成一个pod服务，进行运行。
@@ -720,21 +726,23 @@ oc -n {namespace} set env deployment/www-store ORDERS_EVENT_BASE_URL="http://i-e
 ----
 oc -n {namespace} apply -f $CHE_PROJECTS_ROOT/FleurDeLune/support/projects/module-1/eda-services.yaml
 ----
-
++
 [TIP]
 ====
-👉 这个yaml脚本里面，定义了integration, 有camel的源代码，而且使用了camel的语法，语法介绍参考这里： https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#FMRS-BJDS
+👉 这个yaml脚本里面，定义了integration, 有camel的源代码，而且使用了camel的语法，语法介绍参考这里 link:{https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/apache_camel_development_guide/index#FMRS-BJDS}[文档]
 
 简单来说，比如inventory这个，他就是先从amq上收到一个信息，然后log一下。日志范例如下：
 
+----
 2022-07-28 09:17:39,207 INFO  [route1] (Camel (camel-1) thread #0 - JmsConsumer[incomingorders]) Inventory Notified {"address":"hello","itemId":"135790","orderId":"978","orderItemName":"Mango","price":2,"quantity":1,"username":null,"zipCode":"15555"}
+----
 
 然后反序列化和序列化一下，中间设置了一下 message 的 header 。接下来，等待一小段时间。然后调用自定义的一个数据结构映射器 processInventory ，把数据 mapping 一下。最后，把这个新的数据结构发送到 amq 上的 notification topic。最后，再日志一下，日志范例如下：
-
+----
 2022-07-28 09:17:44,346 INFO  [org.apa.qpi.jms.JmsConnection] (AmqpProvider :(2):[amqp://messaging-88d9c44.workshop-operators.svc:-1]) Connection ID:e987012b-43d1-46e5-9443-7140f7d348f5:2 connected to server: amqp://messaging-88d9c44.workshop-operators.svc
 
 2022-07-28 09:17:44,382 INFO  [info] (Camel (camel-1) thread #1 - Delay) Exchange[ExchangePattern: InOut, BodyType: String, Body: {"orderId":"978","itemId":"135790","department":"inventory","datetime":1658999864292,"quantity":1,"flavor":"Mango","inventoryId":490933}]
-
+----
 另外，我们注意到，在这个 yaml 文件里面，integration 的定义，引用了之前的configmap 里面的参数定义。
 ====
 
@@ -750,9 +758,10 @@ In your topology view do you see 2 new services deployed: `invoice-events` and `
 
 [TIP]
 ====
-👉注意，这里测试的是之前在fuse online上图形化配置的那个integration. 至于为什么url里面有i-event，是因为，我们配置了intergation的名字是event， fuse online发布的时候，自动加上了i-, 参考这个文档： https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/integrating_applications_with_fuse_online/index#how-to-specify-request_webhook
+👉 注意，这里测试的是之前在fuse online上图形化配置的那个integration. 至于为什么url里面有i-event，是因为，我们配置了intergation的名字是event， fuse online发布的时候，自动加上了i-, 参考这个 link:{https://access.redhat.com/documentation/en-us/red_hat_fuse/7.11/html-single/integrating_applications_with_fuse_online/index#how-to-specify-request_webhook}[文档]
 
-👉实际上，当我们在fuse-online里面，配置完成一个integration，并且发布以后，系统里面会有一个buile config创建出来，并且会有一个build运行，最后会有一个pod运行出来，对应我们定义好了的integration.
+👉 实际上，当我们在fuse-online里面，配置完成一个integration，并且发布以后，系统里面会有一个buile config创建出来，并且会有一个build运行，最后会有一个pod运行出来，对应我们定义好了的integration.
+
 ====
 
 . In the same CodeReady Workspaces terminal issue the following command:
@@ -923,7 +932,7 @@ oc patch -n {namespace} dc/events -p '{ "metadata" : { "annotations" : { "app.op
 [TIP]
 ====
 👉 上面的命令，就是把一个 config map 注入到 deployment config 中，这样，我们就可以在 deployment config 中，使用 `AMQP_HOST` 和 `AMQP_PORT` 的环境变量，来访问我们的消息队列。而这个 config map 的内容，我们查看了一下：
-
+----
 lab-user@bastion:~$ oc get cm/amq-config -o json | jq .data
 {
   "ca.crt": "......",
@@ -934,7 +943,7 @@ lab-user@bastion:~$ oc get cm/amq-config -o json | jq .data
   "service.port.amqp-wss": "443",
   "service.port.amqps": "5671"
 }
-
+----
 至于为什么可以用环境变量来设置，可以看smallrye的文档： https://smallrye.io/smallrye-reactive-messaging/smallrye-reactive-messaging/3.4/amqp/amqp.html#amqp-inbound
 
 ====

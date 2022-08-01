@@ -145,6 +145,11 @@ oc project {namespace}
 oc -n {user-username} apply -f $CHE_PROJECTS_ROOT/FleurDeLune/projects/harvest/simulator/config/prereq.yaml
 ----
 
+[TIP]
+====
+👉 如果之前的 module 1/2 没有做，这里就会用一个 yaml 文件部署出来，里面就是部署了2个东西，一个是 amq 的 address space，另外一个是 moon kafka topic. 
+====
+
 . Navigate to the {openshift-host}[OpenShift Developer Console, window="_blank", id="{context}-3"] and login with your OpenShift credentials (`{user-username}` and `{user-password}`).
 
 . Click on the the Topology view (left side menu)
@@ -264,6 +269,26 @@ image::images/2.1.9-edgesim.png[2.1.9-edgesim, role="integr8ly-img-responsive"]
 kamel run EdgeSimulator.java
 ----
 
+[TIP]
+====
+👉 kamel run 会创建一个 build config, 并进而创建一个 build，命令执行以后，输出是这样的，可以看到多了几个参数。link:{https://access.redhat.com/documentation/fr-fr/red_hat_integration/2021.q3/html/developing_and_managing_integrations_using_camel_k/configuring-camel-k#assembly-specifying-runtime-configuration-options}[官方文档] 在这里
+----
+Modeline options have been loaded from source files
+Full command: kamel run EdgeSimulator.java --dependency=camel-bean --dependency=camel-jackson --configmap=edge-config 
+integration "edge-simulator" created
+----
+
+👉 {{simulator.run}} 是引用了配置文件里面的值，这里面，值就是 true
+
+👉 timer:name 是一个时间序列生成器，用法见 link:{https://camel.apache.org/components/3.18.x/timer-component.html}[文档]
+
+👉 simple 的用法，就是简单的运行一下规则表达式，见 link:{https://camel.apache.org/components/3.18.x/languages/simple-language.html}[文档]
+
+👉 这个程序，用EIP的脚本方式，做了一个简单的逻辑，用一个内置的时序发生器，定时产生事件，然后判断配置文件里面，是不是触发消息输出，如果配置了 true ， 就调用 java 的方法，造一个消息，然后发给amq.
+
+👉 我们在这里，又看到了EIP脚本的能力，能简化业务逻辑代码的开发，同时也能和 java 代码片段集成。
+====
+
 . Give the deployment 2-5 minutes to run. To see the log, run the following command, and type ctrl-C/cmd-C to exit the log
 +
 [source,bash,subs="attributes+"]
@@ -297,6 +322,13 @@ Now that the harvest data is now streaming into the topic, we will need to grade
 image::images/3.0.0-overview.png[3.0.0-overview, role="integr8ly-img-responsive"]
 
 image::images/3.0.0-diagram.png[3.0.0-diagram, role="integr8ly-img-responsive"]
+
+[TIP]
+====
+👉 默认的图不是太好，作者重新画了一个。这部分联系，是用一个模拟的事件发生器，产生事件，然后用一个比较复杂的EIP模型，处理这些事件/消息，然后转发到amq stream / kafka 里面去。同时，把消息备份到数据库里面做分析。
+====
+
+image::arch.drawio.svg[]
 
 . Navigate to the {openshift-host}[OpenShift Developer Console, window="_blank", id="{context}-3"]
 
@@ -434,10 +466,23 @@ cd /projects/FleurDeLune/projects/harvest/inventory
 oc create configmap sender-config  --from-file=kafka.properties
 kamel run Inventory.java --name=inventory-lab3
 ----
++
+[TIP]
+====
+👉 运行完以后提示：
+----
+Full command: kamel run Inventory.java --name=inventory-lab3 --dependency=mvn:org.postgresql:postgresql:42.2.10 --dependency=camel-jdbc --dependency=mvn:org.apache.commons:commons-dbcp2:2.7.0 --configmap=sender-config 
+----
+====
 
 . After the Camel-K command has finished deploying, it should run via the terminal without errors.  You should see **Integration Created**.
 +
 image::images/3.1.11-camel-k-inventory.png[3.1.11-camel-k-inventory, role="integr8ly-img-responsive"]
++
+[TIP]
+====
+👉 这里似乎有点问题，你看不到这个结果，可以忽略掉。
+====
 
 . We can verify that orders are inserted into the database tables (premium and standard), by returning to the OpenShift Developer Console, selecting postgresql and clicking the running pod.
 +
@@ -485,6 +530,20 @@ oc project {namespace}
 oc create -f connect-secret.yaml
 oc create -f jdg-cluster.yaml
 ----
++
+[TIP]
+====
+👉 secret 解密以后，是这样的
+----
+credentials:
+- username: developer
+  password: password
+- username: operator
+  password: password
+----
+
+👉 之后创建了一个 infinispan / redhat datagrid 的实例，redhat datagrid 是内存数据库，对标redis，有一些异地同步/异步写的企业级功能。
+====
 
 . Navigate back to the OpenShift Developer console, select *Topology*, then click on the `example-infinispan` container.  Verify the pod has started and is running.
 +
@@ -531,6 +590,17 @@ from("kafka:user1-premium?groupId=premium-shipping")
 ----
 +
 image::images/4.1.6-update-kafka-topic.png[4.1.6-update-kafka-topic, role="integr8ly-img-responsive"]
++
+[TIP]
+====
+👉 这部分 camel / EIP 脚本逻辑是这样的。
+
+首先，在 infinispan / data grid 内存数据库里面，就2个key，一个是premium，一个是standard。然后脚本先清空 premium key 的内存数据库对应数据，算是启动时候的一个数据归零操作。
+
+然后，从 kafka 读取 simulator 发来的数据， simulator 的数据结果是，用 农场 / farm 做 id， 然后把收获的果子，作为一个 list 放进去。这样，从 kafka 读出来以后，先把这个数据存到 head 里面，然后从 infinispan / data grid 里面，读出来已经有的货运信息，之后，把现在已经有的货运信息，以及kafka拿来的收获信息，放给 assignShipment 去拼装出一个新的货运信息，把这个新的货运信息，存到 infinispan / datagrid 的 key 是 premium 的数据结构中。
+
+👉 后面的 standard 类别，处理逻辑是一样的。
+====
 
 . We need to update the standard shipping config map.  Open up `standardshipping-config.yaml` file and update both the `camel.component.kafka.brokers` and `camel.component.infinispan.configuration.hosts` URLs.  You can reuse the URLs you used in the premium shipping config map.
 +
@@ -553,6 +623,16 @@ image::images/4.1.8-standard-java-update.png[4.1.8-standard-java-update, role="i
 ----
 kamel run PremiumShipping.java
 ----
++
+[TIP]
+====
+👉 执行完以后，输出是这样的：
+----
+Modeline options have been loaded from source files
+Full command: kamel run PremiumShipping.java --dependency=camel-infinispan --dependency=camel-bean --dependency=camel-jackson --dependency=mvn:org.wildfly.security:wildfly-elytron:1.11.2.Final --dependency=mvn:io.netty:netty-codec:4.1.49.Final --configmap=premiumshipping-config --trait=quarkus.enabled=false 
+integration "premium-shipping" created
+----
+====
 
 . Ensure that the Camel-K command ran without error and connections to Infinispan and Kafka were successful.  You can verify the deployment via the OpenShift Developer topology screen.  Repeat the same for the StandardShipping flow:
 +
@@ -596,6 +676,69 @@ oc apply -f shippingconsole-config.yaml
 ----
 kamel run ConsoleService.java --dev
 ----
++
+[TIP]
+====
+👉 命令的输出是这样的：
+----
+Modeline options have been loaded from source files
+Full command: kamel run ConsoleService.java --dev --dependency=camel-infinispan --dependency=camel-bean --dependency=camel-jackson --dependency=camel-openapi-java --dependency=mvn:org.wildfly.security:wildfly-elytron:1.11.2.Final --dependency=mvn:io.netty:netty-codec:4.1.49.Final --configmap=shippingconsole-config --trait=quarkus.enabled=false 
+integration "console-service" created
+Progress: integration "console-service" in phase Initialization
+Condition "IntegrationPlatformAvailable" is "True" for Integration console-service: user1/camel-ip
+Integration "console-service" in phase "Initialization"
+Progress: integration "console-service" in phase Building Kit
+Integration "console-service" in phase "Building Kit"
+Condition "IntegrationKitAvailable" is "False" for Integration console-service: creating a new integration kit
+Integration Kit "kit-cbjooku2epn2nngcp45g", created by Integration "console-service", changed phase to "Build Submitted"
+Build "kit-cbjooku2epn2nngcp45g", created by Integration "console-service", changed phase to "Scheduling"
+Build "kit-cbjooku2epn2nngcp45g", created by Integration "console-service", changed phase to "Pending"
+Build "kit-cbjooku2epn2nngcp45g", created by Integration "console-service", changed phase to "Running"
+Integration Kit "kit-cbjooku2epn2nngcp45g", created by Integration "console-service", changed phase to "Build Running"
+----
+
+访问 http://console-service-user1.apps.cluster-v68vb.v68vb.sandbox904.opentlc.com/api-doc 返回是这样的：
+----
+{
+  "openapi" : "3.0.2",
+  "info" : {
+    "title" : "Order API",
+    "version" : "1.0"
+  },
+  "servers" : [ {
+    "url" : "http://console-service-user1.apps.cluster-v68vb.v68vb.sandbox904.opentlc.comhttp://0.0.0.0:8080null"
+  } ],
+  "paths" : {
+    "/premium" : {
+      "get" : {
+        "responses" : {
+          "200" : { }
+        },
+        "operationId" : "verb2"
+      }
+    },
+    "/query" : {
+      "get" : {
+        "responses" : {
+          "200" : { }
+        },
+        "operationId" : "verb1"
+      }
+    },
+    "/standard" : {
+      "get" : {
+        "responses" : {
+          "200" : { }
+        },
+        "operationId" : "verb3"
+      }
+    }
+  }
+}
+----
+
+👉 rest 相关的文档，在这里。 https://camel.apache.org/manual/rest-dsl.html#_openapi_swagger_api
+====
 
 . Now that we have the Camel-K interface running, we can view the content in our Data Lake.  First, navigate here (in a new tab) to see the Standard shipments: `http://console-service-{user-username}.{openshift-app-host}/standard`. If successful, you should see output similar to the following:
 +

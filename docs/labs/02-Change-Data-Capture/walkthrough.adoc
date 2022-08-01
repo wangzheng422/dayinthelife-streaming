@@ -220,7 +220,7 @@ spec:
     config.storage.topic: {user-username}-debezium-cluster-configs
     status.storage.topic: {user-username}-debezium-cluster-status
 ----
-
++
 [TIP]
 ====
 👉 kafka connect / connector 是基于社区DBZ，我们需要先看一下架构图。需要注意的是，kafka connect / connector 版本变化比较快，本次实验用的2020-Q2版本, 但是现在实际上已经到了2022-Q3版本了。
@@ -292,7 +292,7 @@ spec:
     database.history.kafka.bootstrap.servers: "earth-cluster-kafka-bootstrap.shared-kafka-earth.svc:9092"
     database.history.kafka.topic: "{user-username}.earth.dbhistory"
 ----
-
++
 [TIP]
 ====
 👉 这里就真正 kafka connector， 他会从目标数据库拿到数据增量，并且转化为 kafka 的消息发送出去。实际上， kafka connector 是 kafka connect 的一个配置。
@@ -342,7 +342,7 @@ Make sure that /#{user-username} is added at the end of the URL. You won't be ab
 ====
 +
 image:images/www-main.png[PHP System]
-
++
 [TIP]
 ====
 👉 不得不说，这个web应用挺吓人的，他是ERP领域的应用，在浏览器里面模拟了终端字符界面的操作。
@@ -544,7 +544,7 @@ spec:
     storage:
       type: ephemeral
 ----
-
++
 [TIP]
 ====
 👉 我们部署一个 kafka ，注意，这里面的存储是临时性的，如果重启，kafka信息都会丢失。
@@ -591,7 +591,7 @@ image::images/add-from-catalog.png[OpenShift From Catalog, role="integr8ly-img-r
 . Type in `mirror` in the search text field and then click on *Kafka MirrorMaker*.
 +
 image::images/openshift-mirrormaker-catalog.png[OpenShift Mirror Maker, role="integr8ly-img-responsive"]
-
++
 [TIP]
 ====
 👉 这里面提到的 mirror maker 和 mirror maker 2 是什么关系，有什么联系？ 官方文档在这里： https://access.redhat.com/documentation/en-us/red_hat_amq_streams/2.1/html-single/amq_streams_on_openshift_overview/index#configuration-points-topic_str
@@ -624,7 +624,7 @@ spec:
     bootstrapServers: 'moon-kafka-bootstrap.{user-username}.svc:9092'
   whitelist: {user-username}.earth.*
 ----
-
++
 [TIP]
 ====
 👉 按照文档的说法，mirror maker 用的同步技术比较“原生”，是用的 kafka 本身的 consumer / producer 技术。

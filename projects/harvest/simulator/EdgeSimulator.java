@@ -18,6 +18,16 @@ public class EdgeSimulator extends RouteBuilder{
   /*
    * Add your Camel Route Here
    */
+  from("timer:tick?fixedRate=true&period=5000")
+    .choice()
+        .when(simple("{{simulator.run}}"))
+            .setBody(method(this, "genRandomIoTData()"))
+            .marshal().json()
+            .log("${body}")
+            .to("amqp:topic:mytopic?subscriptionDurable=false&exchangePattern=InOnly")
+        .otherwise()
+            .log("Nothing send ")
+    ;
 
   }
 
