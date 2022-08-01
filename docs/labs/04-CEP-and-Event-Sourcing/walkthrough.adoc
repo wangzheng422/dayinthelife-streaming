@@ -57,13 +57,17 @@ Your password is: `{user-password}`
 [id="AMQ-Online-Topic"]
 == Provision Simulator and AMQ Online Topic
 
+[TIP]
+====
+👉 这个章节做的事情，是上一个module, module 3 的内容，如果我们没有做 module 3 ，那么这里会快速的补做一下，如果 module 3 做过了，那么这个章节跳过就好了。
+====
+
 === Real time harvest information gathering
 (Skip this task if you have already done so in other labs and go directly to the next Task)
 
 You are setting up a topic in AMQ Online to receive event signals from Edge devices. In this task, you'll provision a messaging topic using Red Hat's Messaging as a Service platform on OpenShift (AMQ Online).
 
-+
-image::images/1.1.0-diagram-1.png[1.1.0-diagram, role="integr8ly-img-responsive"]
+image:images/1.1.0-diagram-1.png[1.1.0-diagram, role="integr8ly-img-responsive"]
 
 *Red Hat AMQ Online* is an OpenShift-based mechanism for delivering messaging as a managed service. With Red Hat AMQ Online, administrators can configure a cloud-native, multi-tenant messaging service where developers can provision messaging using a _web console_. Multiple development teams can provision the brokers and queues from the console, *without* requiring each team to _install, configure, deploy, maintain, or patch any software_.
 [time=10]
@@ -215,6 +219,13 @@ oc apply -f costcenter.yaml
 ----
 kamel run CostCenter.java
 ----
++
+[TIP]
+====
+👉 我们研究一下这个 CostCenter, 他读取 amq 里面的 mytopic，然后调用自定义的 java 方法，把里面的 harvest list 给删掉了。也就是把大部分的消息结构体数据都给删了，就留下了第一层的3个值。最后，把数据塞到 kafka topic costcenter 里面去。
+
+👉 另外，我们看到yaml里面有一个 "|+2" ， + 代表保留回车换行，2代表接下来的缩进是2个空格。参见这个文档： https://yaml-multiline.info/
+====
 
 . Navigate back to the *OpenShift Developer Console* and verify the **cost-center** pod deployed correctly.  You can verify this by checking the Harvest events are coming in and there are no errors.
 
@@ -265,6 +276,17 @@ oc apply -f costadvice-config.yaml
 ----
 kamel run CostAdvice.java
 ----
++
+[TIP]
+====
+👉 这个 camel 里面的逻辑，梳理下来是这样的。
+
+. 读取 kafka topic costcenter 的消息，对每个消息，应用 java 的逻辑，
+
+. java 的逻辑里面，有一个 map 内存变量，key 是 farm id，还定义了每个 farm 的权重，然后根据收到的消息，查找对应 farm， 把数量乘以权重，然后更新 map 内存变量。
+
+. 最后，定义了一个 rest api /costadvice ，当被调用以后，直接调用 java 的逻辑，把 map 内存变量整体返回。
+====
 
 . Navigate back to the *OpenShift Developer Console* and verify the **cost-advice** pod deployed correctly.
 +
@@ -379,6 +401,11 @@ image::images/3.1.8-cost-advice-result.png[3.1.8-cost-advice-route, role="integr
 +
 . Your URL should look like the following: `http://cost-advice-{user-username}.{openshift-app-host}/costadvice`.
 
+[TIP]
+====
+👉 这部分练习，把costcenter关掉了，也就是断掉从amq获得数据，但是充值了 kafka costadvise groupid 的 offset，相当于，把 kafka 当成数据存储，把消息重新读了一遍，然后把 map 内存变量给重新赋值了。
+====
+
 [type=verification]
 Were you able to successfully deploy the Camel-K **Cost Advice** to OpenShift? Did you get the what if results? Try replay with a couple of different costs!
 
@@ -438,6 +465,11 @@ StreamsBuilder builder = new StreamsBuilder();
 
 +
 image::images/4.1.4-topology.png[4.1.4-topology, role="integr8ly-img-responsive"]
++
+[TIP]
+====
+👉 这部分代码，核心是 StreamsBuilder，他做的是 kafka 流式计算，在一个时间窗口内，把收到的消息，做一个聚合计算。
+====
 
 . Open the `harvestevent.drl` file.  under `{lab-path}/projects/overseer/disaster-control/src/main/resources/META-INF/resources/com/redhat/workshop/dil`. Add the RULES to determine if it's disaster or a good harvest day!
 +
@@ -461,6 +493,11 @@ then
     $p.setDisaster(true);
 end
 ----
++
+[TIP]
+====
+👉 drl文件是 drools 项目的规则文件，drools 是红帽（曾经）的产品，process automation manager 的上游项目，虽然PAM转给IBM了，但是 drools 项目的组件，还是在 openshift serverless 里面作为 kogito 云原生组件保留，当然事情还在不断变化中，让我们持续关注 kogito 的动态。
+====
 
 . Back to the `DisasterTopology.java` file.  Let's send the aggregated data to Kogito Rules. Add the following code snippet under **//Pass data into Rules//**
 +
