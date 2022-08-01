@@ -325,7 +325,7 @@ image::images/3.0.0-diagram.png[3.0.0-diagram, role="integr8ly-img-responsive"]
 
 [TIP]
 ====
-👉 默认的图不是太好，作者重新画了一个。这部分联系，是用一个模拟的事件发生器，产生事件，然后用一个比较复杂的EIP模型，处理这些事件/消息，然后转发到amq stream / kafka 里面去。同时，把消息备份到数据库里面做分析。
+👉 默认的图不是太好，作者重新画了一个。这部分练习，是用一个模拟的事件发生器，产生事件，然后用一个比较复杂的EIP模型，处理这些事件/消息，然后转发到amq stream / kafka 里面去。同时，把消息备份到数据库里面做分析。
 ====
 
 image:arch.drawio.svg[]
@@ -801,6 +801,14 @@ image::images/6.1.5-load-json.png[6.1.5-load-json, role="integr8ly-img-responsiv
 . If everything has been running correctly, you should see some Marshmallow distribution and weight metrics displayed on your graph.
 +
 image::images/6.1.6-graph-metrics.png[6.1.6-graph-metrics, role="integr8ly-img-responsive"]
++
+[TIP]
+====
+👉 我们注意到，grafana是从 postgres 数据库里面直接抓取数字的，这里面的关键，是面板里面的 raw_sql 定义
+----
+"rawSql": "SELECT\n  $__timeGroupAlias(created_at,$__interval),\n  avg(weight) AS \"weight\"\nFROM premium\nWHERE\n  $__timeFilter(created_at)\nGROUP BY 1\nORDER BY 1",
+----
+====
 
 [type=verification]
 Were you able to successfully view the FleurDeLune metrics?
