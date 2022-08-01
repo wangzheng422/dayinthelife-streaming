@@ -808,6 +808,8 @@ image::images/6.1.6-graph-metrics.png[6.1.6-graph-metrics, role="integr8ly-img-r
 ----
 "rawSql": "SELECT\n  $__timeGroupAlias(created_at,$__interval),\n  avg(weight) AS \"weight\"\nFROM premium\nWHERE\n  $__timeFilter(created_at)\nGROUP BY 1\nORDER BY 1",
 ----
+
+👉 这里面的宏定义$__timeGroupAlias $__timeFilter，参考这里的文档： https://grafana.com/docs/grafana/latest/datasources/postgres/
 ====
 
 [type=verification]
