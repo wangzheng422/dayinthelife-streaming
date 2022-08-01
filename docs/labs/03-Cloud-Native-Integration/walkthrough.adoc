@@ -26,15 +26,15 @@ Patterns like the Splitter, Content-Based Routing (CBR) and WireTap are still ve
 ====
 👉 Splitter: https://www.enterpriseintegrationpatterns.com/patterns/messaging/Sequencer.html
 
-image::images/2022-07-31T15-25-3A02-124Z.png[] 
+image:images/2022-07-31T15-25-3A02-124Z.png[] 
 
 👉 Content-Based Routing: https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentBasedRouter.html
 
-image::images/2022-07-31T15-27-3A34-773Z.png[] 
+image:images/2022-07-31T15-27-3A34-773Z.png[] 
 
 👉 WireTap: https://www.enterpriseintegrationpatterns.com/patterns/messaging/WireTap.html
 
-image::images/2022-07-31T15-29-3A25-664Z.png[] 
+image:images/2022-07-31T15-29-3A25-664Z.png[] 
 ====
 
 AMQ self-service messaging enables Developers to provision messaging when and where they need it via a web-based browser. The AMQ Online component is built on the foundation of Red Hat OpenShift, a container platform for high scalability and availability of cloud-native applications.
@@ -328,7 +328,7 @@ image::images/3.0.0-diagram.png[3.0.0-diagram, role="integr8ly-img-responsive"]
 👉 默认的图不是太好，作者重新画了一个。这部分联系，是用一个模拟的事件发生器，产生事件，然后用一个比较复杂的EIP模型，处理这些事件/消息，然后转发到amq stream / kafka 里面去。同时，把消息备份到数据库里面做分析。
 ====
 
-image::arch.drawio.svg[]
+image:arch.drawio.svg[]
 
 . Navigate to the {openshift-host}[OpenShift Developer Console, window="_blank", id="{context}-3"]
 
