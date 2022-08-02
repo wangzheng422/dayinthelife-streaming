@@ -164,6 +164,13 @@ image::images/1.0.0-photo.png[1.0.0-photo, role="integr8ly-img-responsive"]
 +
 image::images/3.1.0-diagram.png[3.1.0-overview, role="integr8ly-img-responsive"]
 
+[TIP]
+====
+👉 原文的架构图依然不好看，我们重新画一下。
+====
+
+image:arch.drawio.svg[]
+
 === Steps
 . In {openshift-host}[OpenShift Developer Console, window="_blank", id="{context}-3"], click **+Add** then click **From Catalog** link.
 +
@@ -423,7 +430,13 @@ image::images/4.0.0-photo.png[4.0.0-photo, role="integr8ly-img-responsive"]
 
 +
 image::images/4.0.0-overview.png[4.0.0-overview, role="integr8ly-img-responsive"]
-
++
+[TIP]
+====
+👉 同样的，我们把架构图重新画一下。
+====
++
+image:arch2.drawio.svg[]
 
 . Navigate back to Eclipse Che console: {codeready-url}[Eclipse Che, window="_blank", id="{context}-3"]
 
@@ -469,6 +482,12 @@ image::images/4.1.4-topology.png[4.1.4-topology, role="integr8ly-img-responsive"
 [TIP]
 ====
 👉 这部分代码，核心是 StreamsBuilder，他做的是 kafka 流式计算，在一个时间窗口内，把收到的消息，做一个聚合计算。
+
+👉 我们注意到，他声明了一个返回 Topology 的 monitor 函数，并且用 @Produces 注释，这个是 kafka stream 编程的模式，文档参考 link:{https://docs.confluent.io/platform/current/streams/architecture.html}[官方文档 1]，link:{https://kafka.apache.org/0102/documentation/streams/core-concepts}[官方文档 2] 和 link:{https://juejin.cn/post/7125039768047452167}[野路子文档]
+
+👉 在 Monitor.java 中间，@ApplicationScoped 和 onStart 组合，形成了一个程序的入口，这里面的作用，是监听 kafka topic ，quarkus 有很好的说明 link:{https://quarkus.io/guides/lifecycle#listening-for-startup-and-shutdown-events}[文档]
+
+👉 从整体看，kafka 流式计算的编程模式，和AI/ML的编程模式很相似。
 ====
 
 . Open the `harvestevent.drl` file.  under `{lab-path}/projects/overseer/disaster-control/src/main/resources/META-INF/resources/com/redhat/workshop/dil`. Add the RULES to determine if it's disaster or a good harvest day!
@@ -497,6 +516,10 @@ end
 [TIP]
 ====
 👉 drl文件是 drools 项目的规则文件，drools 是红帽（曾经）的产品，process automation manager 的上游项目，虽然PAM转给IBM了，但是 drools 项目的组件，还是在 openshift serverless 里面作为 kogito 云原生组件保留，当然事情还在不断变化中，让我们持续关注 kogito 的动态。
+
+👉 这个drl文件定义了一个业务逻辑，就是从 DisasterUnit 里面，读取他的 eventStream 中间的 HarvestinFive ， 把那些 totalCnt 小于 150 的，都设置他们的灾难标记为 true 。
+
+👉 这里面展示一种，把业务逻辑，和程序逻辑分离的做法，让我们后面调整灾难的判别逻辑，或者其他的业务逻辑，更为灵活。
 ====
 
 . Back to the `DisasterTopology.java` file.  Let's send the aggregated data to Kogito Rules. Add the following code snippet under **//Pass data into Rules//**
@@ -516,6 +539,11 @@ windowedharvestcnt.map(
         .to(DISASTER_EVENT_TOPIC, Produced.with(Serdes.Long(), harvestinFiveSerde));
 
 ----
++
+[TIP]
+====
+👉 这里面，就是把之前流式计算的聚合结果，应用我们定义的业务逻辑（rule）， 然后把结果，输出给 kafka topic disaster。
+====
 
 . Select **Terminal > Open Terminal** in specific container** and select the container that begins with `tools`.  Click it and a terminal window should open.
 +
@@ -564,6 +592,20 @@ image::images/4.2.1-developer-kogito.png[4.2.1-developer-kogito, role="integr8ly
 
 +
 image::images/4.2.2-log-kogito.png[4.2.2-log-kogito, role="integr8ly-img-responsive"]
+
+[TIP]
+====
+👉 这个时候，去 kafka 里面看，能看到收到了这样的消息：
+----
+sh-4.4$ ./bin/kafka-console-consumer.sh --bootstrap-server moon-kafka-bootstrap.user1.svc:9092 --topic disaster
+{"totalCnt":179,"disaster":false}
+{"totalCnt":158,"disaster":false}
+{"totalCnt":183,"disaster":false}
+{"totalCnt":175,"disaster":false}
+{"totalCnt":224,"disaster":false}
+{"totalCnt":152,"disaster":false}
+----
+====
 
 [type=verification]
 Were you able to successfully deploy the **CEP-KOGITO** application to OpenShift?
