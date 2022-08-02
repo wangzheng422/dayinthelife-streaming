@@ -1,5 +1,24 @@
 # Day in the Streaming Life
 
+## 更新
+
+源项目，是一个非常好的教程，但是文档部分，少了一些对源代码，整体架构，信息源，官方文档的引用和描述，所以本项目主要是对源项目文档部分的补充。
+
+随着时间的推移，本项目部署以后，需要打几个补丁，才能正常运转。
+
+首先，是要给用户更多的权限，否则 developer catalog 显示不出来
+```bash
+oc adm policy add-cluster-role-to-user kamelets.camel.apache.org-v1alpha1-view user1
+```
+
+其次，用户自己要给 code ready workspace 的用户存储，扩大到 2G，默认的 1G 做到 module 4 的时候，就不够用了。
+![](imgs/2022-08-02-14-10-12.png)
+
+最后，要应用本项目文档，要更新 tutorial-web-app deploymentconfig 的 env
+```bash
+oc set env -n webapp dc/tutorial-web-app WALKTHROUGH_LOCATIONS="https://github.com/wangzheng422/dayinthelife-streaming.git?walkthroughsFolder=/docs/labs/"
+```
+
 ## Event-Driven Workshop
 
 This workshop is a series of hands-on modules which are designed to familiarize participants with event-driven concepts and give them a taste of using the new Red Hat Integration stack for building event-driven architectures.
